@@ -16,19 +16,19 @@ namespace JeepDesert
             N = CalcTrips(s, l);
         }
 
-        private int CalcTrips(double s, double l)
+        private static int CalcTrips(double s, double l)
         {
             double _l = 0;
             for (int n = 1; ; n++)
             {
-                _l += S / n;
+                _l += s / (2 * n - 1);
                 if (_l >= l) return n;
             }
         }
 
         public IEnumerable<string> GetMoves()
         {
-            double gas = S, lastStop = 0;
+            double gas = S, lastStop = 0, overall = 0;
             yield return string.Format("Расстояние: {0:F4} | Топливо: {1:F4} | Джип отправляется с базы.", lastStop, gas);
 
             List<double> positions = new List<double>(), gases = new List<double>();
@@ -37,12 +37,11 @@ namespace JeepDesert
             {
                 for (int i = 0; i < positions.Count; i++)
                 {
-                   
                     var position = positions[i];
                     gas -= position;
                     if (i > 0) gas += positions[i - 1];
 
-                    var taken = S / (2 * N - 2 * k + 2);
+                    var taken = S / (2 * N - 2 * i - 1);
                     gases[i] -= taken;
                     gas += taken;
 
@@ -50,11 +49,12 @@ namespace JeepDesert
                         position, gas, taken, gases[i]);
                 }
 
-                var currentMove = 1.0 / (2 * N - 2 * k + 2);
+                var currentMove = S / (2 * N - 2 * k + 1);
                 gas -= currentMove;
 
                 var currentPosition = lastStop + currentMove;
-                var leave = S * (N - k) / (N - k + 1);
+                overall += currentPosition;
+                var leave = S * (2 * N - 2 * k - 1) / (2 * N - 2 * k + 1);
 
                 positions.Add(currentPosition);
                 lastStop = currentPosition;
@@ -67,18 +67,18 @@ namespace JeepDesert
                 for (int i = positions.Count - 2; i >= 0; i--)
                 {
                     var position = positions[i];
-                    gas -= currentPosition - position;
+                    gas -= lastStop - position;
+                    if (i < positions.Count - 2) gas += lastStop - positions[i + 1];
 
-                    var taken = S / (2 * N - 2 * k + 2);
+                    var taken = S / (2 * N - 2 * i - 1);
                     gases[i] -= taken;
                     gas += taken;
 
                     yield return string.Format("Расстояние: {0:F4} | Топливо: {1:F4} | Джип забрал {2:F4} топлива из бочки. Топлива в бочке: {3:F4}",
                         position, gas, taken, gases[i]);
-
-                    gas += currentPosition - position;
                 }
 
+                // gas -= positions[0];
                 gas = S;
                 yield return string.Format("Расстояние: 0.0000 | Топливо: {0:F4} | Джип достиг базы.", gas);
             }
@@ -90,7 +90,7 @@ namespace JeepDesert
                 gas -= position;
                 if (i > 0) gas += positions[i - 1];
 
-                var taken = S / (2 * N - 2 * k + 2);
+                var taken = S / (2 * N - 2 * i - 1);
                 gases[i] -= taken;
                 gas += taken;
 
@@ -99,7 +99,10 @@ namespace JeepDesert
             }
 
             var lastMove = L - lastStop;
+            overall += L;
             gas -= lastMove;
-            yield return string.Format("Расстояние: {0:F4} | Топливо: {1:F4} | 
+            yield return string.Format("Расстояние: {0:F4} | Топливо: {1:F4} | Джип достиг конца пустыни.", L, gas);
+            yield return string.Format("Поездок совершено: {0}. Топлива израсходовано: {1:F4}", N, overall);
+        }
     }
 }
