@@ -29,7 +29,7 @@ namespace JeepDesert
                 {
                     LockUI();
 
-                    var model = new Model(M + 2 * V, N);
+                    var model = new Model(M, V, N);
 
                     foreach (var message in model.GetMoves())
                     {

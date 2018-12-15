@@ -1,27 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace JeepDesert
 {
     internal class Model
     {
         // S - сумма объема бака и канистр, L - расстояние, N - количество поездок
-        private double S, L;
+        private double S, X, L;
         private int N;
 
-        public Model(double s, double l)
+        public Model(double m, double v, double l)
         {
-            S = s;
+            S = m + 2 * v;
+            X = Math.Min(m, 2 * v);
             L = l;
-
-            N = CalcTrips(s, l);
+            N = CalcTrips(X, L - S + X);
         }
 
-        private static int CalcTrips(double s, double l)
+        private static int CalcTrips(double x, double l)
         {
             double _l = 0;
             for (int n = 1; ; n++)
             {
-                _l += s / (2 * n - 1);
+                _l += x / (2 * n - 1);
                 if (_l >= l) return n;
             }
         }
@@ -41,7 +42,7 @@ namespace JeepDesert
                     gas -= position;
                     if (i > 0) gas += positions[i - 1];
 
-                    var taken = S / (2 * N - 2 * i - 1);
+                    var taken = X / (2 * N - 2 * i - 1);
                     gases[i] -= taken;
                     gas += taken;
 
@@ -49,12 +50,12 @@ namespace JeepDesert
                         position, gas, taken, gases[i]);
                 }
 
-                var currentMove = S / (2 * N - 2 * k + 1);
+                var currentMove = X / (2 * N - 2 * k + 1);
                 gas -= currentMove;
 
                 var currentPosition = lastStop + currentMove;
                 overall += currentPosition;
-                var leave = S * (2 * N - 2 * k - 1) / (2 * N - 2 * k + 1);
+                var leave = X * (2 * N - 2 * k - 1) / (2 * N - 2 * k + 1);
 
                 positions.Add(currentPosition);
                 lastStop = currentPosition;
@@ -70,7 +71,7 @@ namespace JeepDesert
                     gas -= lastStop - position;
                     if (i < positions.Count - 2) gas += lastStop - positions[i + 1];
 
-                    var taken = S / (2 * N - 2 * i - 1);
+                    var taken = X / (2 * N - 2 * i - 1);
                     gases[i] -= taken;
                     gas += taken;
 
@@ -78,7 +79,7 @@ namespace JeepDesert
                         position, gas, taken, gases[i]);
                 }
 
-                // gas -= positions[0];
+                gas -= positions[0];
                 gas = S;
                 yield return string.Format("Расстояние: 0.0000 | Топливо: {0:F4} | Джип достиг базы.", gas);
             }
@@ -90,7 +91,7 @@ namespace JeepDesert
                 gas -= position;
                 if (i > 0) gas += positions[i - 1];
 
-                var taken = S / (2 * N - 2 * i - 1);
+                var taken = X / (2 * N - 2 * i - 1);
                 gases[i] -= taken;
                 gas += taken;
 
